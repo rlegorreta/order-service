@@ -1,0 +1,243 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+directive @cypher(
+    """
+     if true, passes the sole responsibility for the nested query result for the field to your Cypher query.
+     You will have to provide all data/structure required by client queries.
+     Otherwise, we assume if you return object-types that you will return the appropriate nodes from your statement.
+    """
+    passThrough: Boolean = false,
+    """
+     Arguments on the field are passed to the Cypher statement and can be used by name.
+     They must not be prefixed by `$` since they are no longer parameters.
+     Just use the same name as the fields' argument.
+     The current node is passed to the statement as `this`.
+     The statement should contain exactly one return expression without any alias.
+     Input types are supported, they appear as `Map` type in your Cypher statement.
+    """
+    statement: String
+  ) on FIELD_DEFINITION
+
+"Marks the field, argument, input field or enum value as deprecated"
+directive @deprecated(
+    "The reason for the deprecation"
+    reason: String = "No longer supported"
+  ) on FIELD_DEFINITION | ARGUMENT_DEFINITION | ENUM_VALUE | INPUT_FIELD_DEFINITION
+
+directive @dynamic(prefix: String = "properties.") on FIELD_DEFINITION
+
+directive @ignore on FIELD_DEFINITION
+
+"Directs the executor to include this field or fragment only when the `if` argument is true"
+directive @include(
+    "Included when true."
+    if: Boolean!
+  ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+directive @property(name: String) on FIELD_DEFINITION
+
+directive @relation(direction: RelationDirection = OUT, from: String = "from", name: String, to: String = "to") on OBJECT | FIELD_DEFINITION
+
+"Directs the executor to skip this field or fragment when the `if` argument is true."
+directive @skip(
+    "Skipped when true."
+    if: Boolean!
+  ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+"Exposes a URL that specifies the behaviour of this scalar."
+directive @specifiedBy(
+    "The URL that specifies the behaviour of this scalar."
+    url: String!
+  ) on SCALAR
+
+type Mutation {
+  createOrder(cantidad: String!, fechaOperacion: String!, monto: String!, productoID: String!, tiendaID: String!): Order!
+  createOrderCount(count: Int!): OrderCount!
+  "Deletes Order and returns the type itself"
+  deleteOrder(_id: ID!): Order
+  mergeOrder(_id: ID!, cantidad: String, fechaOperacion: String, monto: String, productoID: String, tiendaID: String): Order!
+  updateOrder(_id: ID!, cantidad: String, fechaOperacion: String, monto: String, productoID: String, tiendaID: String): Order
+}
+
+type Order {
+  _id: ID!
+  cantidad: String!
+  fechaOperacion: String!
+  monto: String!
+  productoID: String!
+  tiendaID: String!
+}
+
+type OrderCount {
+  count: Int! @cypher(passThrough : false, statement : "MATCH (o:Order) RETURN COUNT(o)")
+}
+
+type Query {
+  orderCounts(count: Int, count_gt: Int, count_gte: Int, count_in: [Int!], count_lt: Int, count_lte: Int, count_not: Int, count_not_in: [Int!], filter: _OrderCountFilter, options: OrderCountOptions): [OrderCount!]!
+  orders(_id: ID, cantidad: String, cantidad_contains: String, cantidad_ends_with: String, cantidad_gt: String, cantidad_gte: String, cantidad_in: [String!], cantidad_lt: String, cantidad_lte: String, cantidad_matches: String, cantidad_not: String, cantidad_not_contains: String, cantidad_not_ends_with: String, cantidad_not_in: [String!], cantidad_not_starts_with: String, cantidad_starts_with: String, fechaOperacion: String, fechaOperacion_contains: String, fechaOperacion_ends_with: String, fechaOperacion_gt: String, fechaOperacion_gte: String, fechaOperacion_in: [String!], fechaOperacion_lt: String, fechaOperacion_lte: String, fechaOperacion_matches: String, fechaOperacion_not: String, fechaOperacion_not_contains: String, fechaOperacion_not_ends_with: String, fechaOperacion_not_in: [String!], fechaOperacion_not_starts_with: String, fechaOperacion_starts_with: String, filter: _OrderFilter, monto: String, monto_contains: String, monto_ends_with: String, monto_gt: String, monto_gte: String, monto_in: [String!], monto_lt: String, monto_lte: String, monto_matches: String, monto_not: String, monto_not_contains: String, monto_not_ends_with: String, monto_not_in: [String!], monto_not_starts_with: String, monto_starts_with: String, options: OrderOptions, productoID: String, productoID_contains: String, productoID_ends_with: String, productoID_gt: String, productoID_gte: String, productoID_in: [String!], productoID_lt: String, productoID_lte: String, productoID_matches: String, productoID_not: String, productoID_not_contains: String, productoID_not_ends_with: String, productoID_not_in: [String!], productoID_not_starts_with: String, productoID_starts_with: String, tiendaID: String, tiendaID_contains: String, tiendaID_ends_with: String, tiendaID_gt: String, tiendaID_gte: String, tiendaID_in: [String!], tiendaID_lt: String, tiendaID_lte: String, tiendaID_matches: String, tiendaID_not: String, tiendaID_not_contains: String, tiendaID_not_ends_with: String, tiendaID_not_in: [String!], tiendaID_not_starts_with: String, tiendaID_starts_with: String): [Order!]!
+}
+
+enum RelationDirection {
+  BOTH
+  IN
+  OUT
+}
+
+enum SortDirection {
+  "Sort by field values in ascending order."
+  ASC
+  "Sort by field values in descending order."
+  DESC
+}
+
+"Scalar LocalDate"
+scalar LocalDate
+
+"Scalar LocalDateTime"
+scalar LocalDateTime
+
+input OrderCountOptions {
+  "Defines the maximum amount of records returned"
+  limit: Int
+  "Defines the amount of records to be skipped"
+  skip: Int
+  "Specify one or more OrderCountSort objects to sort OrderCounts by. The sorts will be applied in the order in which they are arranged in the array."
+  sort: [OrderCountSort!]
+}
+
+"Fields to sort OrderCounts by. The order in which sorts are applied is not guaranteed when specifying many fields in one MovieSort object."
+input OrderCountSort {
+  count: SortDirection
+}
+
+input OrderOptions {
+  "Defines the maximum amount of records returned"
+  limit: Int
+  "Defines the amount of records to be skipped"
+  skip: Int
+  "Specify one or more OrderSort objects to sort Orders by. The sorts will be applied in the order in which they are arranged in the array."
+  sort: [OrderSort!]
+}
+
+"Fields to sort Orders by. The order in which sorts are applied is not guaranteed when specifying many fields in one MovieSort object."
+input OrderSort {
+  _id: SortDirection
+  cantidad: SortDirection
+  fechaOperacion: SortDirection
+  monto: SortDirection
+  productoID: SortDirection
+  tiendaID: SortDirection
+}
+
+input _OrderCountFilter {
+  AND: [_OrderCountFilter!]
+  NOT: [_OrderCountFilter!]
+  OR: [_OrderCountFilter!]
+  count: Int
+  count_gt: Int
+  count_gte: Int
+  count_in: [Int]
+  count_lt: Int
+  count_lte: Int
+  count_not: Int
+  count_not_in: [Int]
+}
+
+input _OrderFilter {
+  AND: [_OrderFilter!]
+  NOT: [_OrderFilter!]
+  OR: [_OrderFilter!]
+  _id: ID
+  _id_contains: ID
+  _id_ends_with: ID
+  _id_gt: ID
+  _id_gte: ID
+  _id_in: [ID]
+  _id_lt: ID
+  _id_lte: ID
+  _id_matches: ID
+  _id_not: ID
+  _id_not_contains: ID
+  _id_not_ends_with: ID
+  _id_not_in: [ID]
+  _id_not_starts_with: ID
+  _id_starts_with: ID
+  cantidad: String
+  cantidad_contains: String
+  cantidad_ends_with: String
+  cantidad_gt: String
+  cantidad_gte: String
+  cantidad_in: [String]
+  cantidad_lt: String
+  cantidad_lte: String
+  cantidad_matches: String
+  cantidad_not: String
+  cantidad_not_contains: String
+  cantidad_not_ends_with: String
+  cantidad_not_in: [String]
+  cantidad_not_starts_with: String
+  cantidad_starts_with: String
+  fechaOperacion: String
+  fechaOperacion_contains: String
+  fechaOperacion_ends_with: String
+  fechaOperacion_gt: String
+  fechaOperacion_gte: String
+  fechaOperacion_in: [String]
+  fechaOperacion_lt: String
+  fechaOperacion_lte: String
+  fechaOperacion_matches: String
+  fechaOperacion_not: String
+  fechaOperacion_not_contains: String
+  fechaOperacion_not_ends_with: String
+  fechaOperacion_not_in: [String]
+  fechaOperacion_not_starts_with: String
+  fechaOperacion_starts_with: String
+  monto: String
+  monto_contains: String
+  monto_ends_with: String
+  monto_gt: String
+  monto_gte: String
+  monto_in: [String]
+  monto_lt: String
+  monto_lte: String
+  monto_matches: String
+  monto_not: String
+  monto_not_contains: String
+  monto_not_ends_with: String
+  monto_not_in: [String]
+  monto_not_starts_with: String
+  monto_starts_with: String
+  productoID: String
+  productoID_contains: String
+  productoID_ends_with: String
+  productoID_gt: String
+  productoID_gte: String
+  productoID_in: [String]
+  productoID_lt: String
+  productoID_lte: String
+  productoID_matches: String
+  productoID_not: String
+  productoID_not_contains: String
+  productoID_not_ends_with: String
+  productoID_not_in: [String]
+  productoID_not_starts_with: String
+  productoID_starts_with: String
+  tiendaID: String
+  tiendaID_contains: String
+  tiendaID_ends_with: String
+  tiendaID_gt: String
+  tiendaID_gte: String
+  tiendaID_in: [String]
+  tiendaID_lt: String
+  tiendaID_lte: String
+  tiendaID_matches: String
+  tiendaID_not: String
+  tiendaID_not_contains: String
+  tiendaID_not_ends_with: String
+  tiendaID_not_in: [String]
+  tiendaID_not_starts_with: String
+  tiendaID_starts_with: String
+}

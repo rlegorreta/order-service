@@ -1,0 +1,23 @@
+scalar LocalDateTime
+scalar LocalDate
+
+type Order {
+    _id: ID!
+    fechaOperacion: String!
+    tiendaID: String!
+    productoID: String!
+    cantidad: String!
+    monto: String!
+}
+
+type OrderCount {
+   count: Int! @cypher(statement:
+   """
+   MATCH (o:Order) RETURN COUNT(o)
+   """)
+}
+
+type Mutation {
+}
+
+

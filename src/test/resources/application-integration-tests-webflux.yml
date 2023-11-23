@@ -1,0 +1,18 @@
+bup-service:
+  testing: true
+eureka:
+  client:
+    enabled: false
+    registerWithEureka: false
+  serviceUrl:
+    fetchRegistry: false
+logging:
+  level:
+    root: INFO
+    com:
+      acme:
+        bupservice: DEBUG
+      ailegorreta: DEBUG
+spring:
+  main:
+    allow-bean-definition-overriding: true

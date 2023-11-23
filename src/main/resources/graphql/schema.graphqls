@@ -1,0 +1,8 @@
+
+type JavaData {
+    name: String
+}
+
+extend type Query {
+    ordersCount: String
+}

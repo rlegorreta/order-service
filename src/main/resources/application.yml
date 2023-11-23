@@ -1,0 +1,124 @@
+server:
+  port: 8530
+  shutdown: graceful
+  netty:
+    connection-timeout: 2s
+    idle-timeout: 15s
+
+spring:
+  application:
+    name: order-service
+  lifecycle:
+    timeout-per-shutdown-phase: 15s
+  config:
+    import: "optional:configserver:"   # Imports configuration data from a config server when available
+  cloud:
+    config:
+      uri: http://localhost:8071
+      request-connect-timeout: 5000   # Timeout on waiting to connect to the config server (ms)
+      request-read-timeout: 5000      # Timeout on waiting to read configuration data from the config server (ms)
+      fail-fast: true                 # In production, set to true. Makes a failure to connect to the config server fatal
+      retry:
+        max-attempts: 6
+        initial-interval: 1000        # Initial retry interval for backoff (ms)
+        max-interval: 2000            # Maximum retry interval for backoff (ms)
+        multiplier: 1.1               # Multiplier to compute the next interval
+    function:
+      definition: consumerSparkOrder
+    stream:
+      default:
+        producer:
+          useNativeEncoding: true
+        consumer:
+          useNativeDecoding: true
+      function:
+        definition: consumerSparkOrder;producerTest
+      kafka:
+        binder:
+          brokers: http://localhost:9092
+        bindings:
+          producerTest-out-0:
+            producer:
+              configuration:
+                key.serializer: org.apache.kafka.common.serialization.StringSerializer
+                value.serializer: com.ailegorreta.commons.event.EventDTOSerializer
+          consumerSparkOrder-in-0:
+            consumer:
+              configuration:
+                key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+                value.deserializer: com.ailegorreta.commons.event.EventDTODeSerializer
+      bindings:
+        producerTest-out-0:
+          destination: ordenes
+        consumerSparkOrder-in-0:
+          destination: ordenes
+          group: group-order-service
+  neo4j:
+    repositories:
+      type: imperative
+    uri: bolt://localhost:7689
+  profiles:
+    active: local
+  security:
+    oauth2:
+      client:
+        registration:
+          order-service-client-credentials:
+            provider: spring
+            client-id: order-service
+            client-secret: order-service-secret
+            authorization-grant-type: client_credentials
+            scope: acme.facultad
+            client-name: order-service-client-credentials
+        provider:
+          spring:
+            issuer-uri: http://auth-service:9000
+            # ^ for localNoDocker & localCmdLine an 'auth' must be declared in hosts file
+        rest:
+          client-id: order-service-client-credentials
+      resourceserver:
+        jwt:
+          issuer-uri: http://auth-service:9000
+
+# Also needed by AuthServerUserLookupService
+security:
+  clientId: order-service
+
+graphql:
+  schema:
+    neo4j: neo4j
+
+logging:
+  level:
+    com:
+      netflix: WARN
+      springframework:
+        web: WARN
+        core:
+          codec:
+            StringDecoder: TRACE
+      acme:
+        orderservice: WARN
+  pattern:
+    level: '%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]'
+
+info:
+  system: Marketplace AILegorreta
+  database: neo4j
+
+# Monitoring with actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: order, env, health, heapdump, info, loggers, mappings, prometheus
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+      probes:
+        enabled: true
+
+order-service:
+  test: false
+
