@@ -22,13 +22,16 @@
  */
 package com.acme.orderservice.model
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import org.springframework.data.neo4j.core.schema.*
 
 @Node("Order")
 data class Order (
     @Id
     @GeneratedValue
-    var id: String,
+    @JsonIgnore
+    var id: Long,   // The @JsonIgnor on order to have tests as valid jsons
+                    // but if for some reason we need to have them it can be commented
     @Property(name = "fechaOperacion")
     var fechaOperacion: String,
     @Property(name = "tiendaID")

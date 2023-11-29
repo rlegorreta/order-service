@@ -33,7 +33,7 @@ class OrderService(private val orderRepository: OrderRepository): HasLogger {
 
     fun addOrder(orderDTO: OrderDTO) {
         logger.debug("Will add order ${orderDTO.productoID}")
-        val order = Order("", orderDTO.fechaOperacion,orderDTO.tiendaID,
+        val order = Order(0L, orderDTO.fechaOperacion,orderDTO.tiendaID,
                             orderDTO.productoID,orderDTO.cantidad, orderDTO.monto)
 
         orderRepository.save(order)

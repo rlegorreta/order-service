@@ -33,5 +33,5 @@ import org.springframework.data.neo4j.repository.Neo4jRepository
  * @author: rlh
  * @date: November 2023
  */
-interface OrderRepository : Neo4jRepository<Order, String> {
+interface OrderRepository : Neo4jRepository<Order, Long> {
 }

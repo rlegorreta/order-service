@@ -81,12 +81,14 @@ public class Neo4jConfiguration implements HasLogger {
                 Result result = tx.run(query, boltParams);
 
                 try {
-                    if (isListType(cypher.getType()))
-                        return result.list()
+                    if (isListType(cypher.getType())) {
+                        var res = result.list()
                                 .stream()
                                 .map(record -> record.get(cypher.getVariable()).asObject())
                                 .collect(Collectors.toList());
-                    else
+                        getLogger().debug(">>> Query executed res:" + res);
+                        return res;
+                    } else
                         return result.list()
                                 .stream()
                                 .map(record -> record.get(cypher.getVariable()).asObject())

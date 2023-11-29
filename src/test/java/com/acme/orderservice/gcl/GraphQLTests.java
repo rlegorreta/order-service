@@ -32,7 +32,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.graphql.tester.AutoConfigureGraphQlTester;
-import org.springframework.graphql.test.tester.ExecutionGraphQlServiceTester;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.stream.function.StreamBridge;
@@ -42,7 +41,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -99,43 +98,30 @@ public class GraphQLTests {
     @Autowired
     private ObjectMapper mapper;
 
-    /*
-    private final GraphQlTester graphQlTester;
-
-    @Autowired
-    public GraphQLTests(ExecutionGraphQlService graphQlService) {
-        this.graphQlTester = ExecutionGraphQlServiceTester.builder(graphQlService).build();
-    }
-
-     */
-
     /**
      * Validates database initialization.
      */
     @Test
     void findAllOrders(@Autowired OrderRepository orderRepository) throws JsonProcessingException {
-        /* Companies count */
-        /*
-        String queryCompanyCount = """
-                    query {
-                        companiasCount(nombre:"ACME SA de CV")
-                    }
-                """;
-        var companiesCount = graphQlTester.document(queryCompanyCount)
-                .execute()
-                .path("data.companiasCount[*]")
-                .matchesJson("""
-                        [
-                        ]
-                        """);
-
-        //assertThat(companiesCount.size()).isEqualTo(3);
-         */
-        var newOrder = new Order("", LocalDate.now().toString(),
-                                "Polanco", "Computadora","2", "4000.0");
+        var newOrder = new Order(0L, LocalDate.now().toString(),
+                "Polanco", "Computadora","2", "4000.0");
 
         orderRepository.save(newOrder);
-        System.out.println(">>>>>> Ordenes:" + orderRepository.count());
+
+        /* Orders count */
+        String queryOrdersCount = """
+                    query {
+                        ordersCount
+                    }
+                """;
+        var ordersCount = graphQlTester.document(queryOrdersCount)
+                .execute()
+                .path("ordersCount")
+                .entity(Long.class)
+                .get();
+
+        assertThat(ordersCount).isEqualTo(1L);
+
         /* Query all orders */
         String query = """
                 query {
@@ -151,12 +137,16 @@ public class GraphQLTests {
         graphQlTester.document(query)
                      .execute()
                      .path("orders")
-                  //   .hasValue()
-             //   .entityList(Estado.class)
-             //   .get();
-                    .matchesJson(mapper.writeValueAsString(newOrder));
+                     .matchesJson(mapper.writeValueAsString(Arrays.asList(newOrder)));
+        // ^ in order to work for the mapper we declared the id as @JsonIgnore property
 
-        // assertThat(companies.size()).isEqualTo(7);
+        var orders = graphQlTester.document(query)
+                .execute()
+                .path("orders")
+                .entityList(Order.class)
+                .get();
+
+        assertThat(orders.size()).isEqualTo(1);
     }
 
 }

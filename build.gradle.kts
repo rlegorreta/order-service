@@ -2,13 +2,30 @@ import org.gradle.internal.classpath.Instrumented.systemProperty
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 
+/*
+ November 2023
+ Important note: there is incompatibility versions that are used between libraries
+                 for spring-boot-starter-graphql and the library neo4j-graphql-java
+                 using the same library com.graphql-java.
+           If we use springframework.boot 3.1.4 the spring-starter-graphql uses the
+           com.graphql-java version 20.1 that it is INCOMPATIBLE with the version 19.2
+           that is used in neo4j-graph-ql.
+
+           So we need to downgrade the spingframework.boot to version 3.0.4 in order
+           that spring-boot-starter-graphql imports the com.graphql-java 19.2
+
+           Meanwhile neo4j-graphql-java is not upgraded to a un upper spring boot
+           we must need to keep it in version 3.0.4.
+
+           for more information see: https://github.com/graphql-java/graphql-java/issues/1199
+ */
 plugins {
-    id("org.springframework.boot") version "3.1.4"
+    id("org.springframework.boot") version "3.0.4"
     id("io.spring.dependency-management") version "1.1.3"
     id("org.jetbrains.kotlin.plugin.allopen") version "1.9.10"
-    kotlin("jvm") version "1.9.10"
-    kotlin("plugin.spring") version "1.9.10"
-    kotlin("kapt") version "1.9.10"
+    kotlin("jvm") version "1.7.22"
+    kotlin("plugin.spring") version "1.7.22"
+    kotlin("kapt") version "1.7.22"
     id("io.freefair.lombok") version "8.4"
     id("maven-publish")
 }
@@ -51,15 +68,15 @@ configurations {
     }
 }
 
-extra["springCloudVersion"] = "2022.0.4"
+extra["springCloudVersion"] = "2022.0.0"
 extra["testcontainersVersion"] = "1.18.1"
 extra["otelVersion"] = "1.26.0"
 extra["ailegorreta-kit-version"] = "2.0.0"
 extra["jsoup-version"] = "1.15.3"
 extra["coroutines-version"] = "1.7.3"
 extra["neo4j-driver.version"] = "4.3.6.0"
-extra["neo4j-graphql-java.version"] = "1.8.0"
-extra["neo4j-graphql-augmented-schema-generator-maven-plugin.version"] = "1.8.0"
+extra["neo4j-graphql-java.version"] = "1.6.0"
+extra["neo4j-graphql-augmented-schema-generator-maven-plugin.version"] = "1.6.0"
 
 dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-config")
