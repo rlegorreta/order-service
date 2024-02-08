@@ -68,11 +68,11 @@ class ResourceServerConfig {
             .pathMatchers("order/**").hasAuthority("SCOPE_acme.facultad")
             .anyExchange().authenticated()
         }
-            .oauth2ResourceServer{ server -> server.jwt { Customizer.withDefaults<Any>()}}
-            .requestCache{ requestCacheSpec ->
-                requestCacheSpec.requestCache(NoOpServerRequestCache.getInstance())
-            }
-            .csrf(ServerHttpSecurity.CsrfSpec::disable)
+        .oauth2ResourceServer{ server -> server.jwt { Customizer.withDefaults<Any>()}}
+        .requestCache{ requestCacheSpec ->
+            requestCacheSpec.requestCache(NoOpServerRequestCache.getInstance())
+        }
+        .csrf(ServerHttpSecurity.CsrfSpec::disable)
 
         return http.build()
     }

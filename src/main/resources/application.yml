@@ -46,7 +46,7 @@ spring:
             consumer:
               configuration:
                 key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
-                value.deserializer: com.ailegorreta.commons.event.EventDTODeSerializer
+                value.deserializer: org.apache.kafka.common.serialization.StringDeserializer
       bindings:
         producerTest-out-0:
           destination: ordenes
@@ -79,6 +79,14 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://auth-service:9000
+  graphql:
+    schema:
+      printer:
+        enabled: true
+    graphiql:
+      enabled: true
+      path: /order/graphiql
+    path: /order/graphql
 
 # Also needed by AuthServerUserLookupService
 security:
@@ -90,6 +98,7 @@ graphql:
 
 logging:
   level:
+    root: WARN
     com:
       netflix: WARN
       springframework:
@@ -99,6 +108,7 @@ logging:
             StringDecoder: TRACE
       acme:
         orderservice: WARN
+      ailegorreta: WARN
   pattern:
     level: '%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]'
 

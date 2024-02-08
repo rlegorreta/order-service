@@ -37,7 +37,7 @@ import org.springframework.stereotype.Service
  *
  * @project: order-service
  * @autho: rlh
- * @date November 2023
+ * @date December 2023
  */
 @Service
 class EventServiceTest(private val streamBridge: StreamBridge,
@@ -49,6 +49,16 @@ class EventServiceTest(private val streamBridge: StreamBridge,
     fun sendEvent(value: OrderDTO): OrderDTO {
         logger.debug("Will send use stream bridge:$streamBridge")
 
+        val orString = """
+            {
+              "fechaOperacion":"2022-10-31",
+              "tiendaID":"0199999",
+              "productoID":"aaa4ddddd",
+              "cantidad":"10",
+              "monto":"117.44"
+            }
+        """.trimIndent()
+        logger.debug("An example of message sent {}", orString)
         val res = streamBridge.send("producerTest-out-0", mapper.writeValueAsString(value))
         logger.debug("Result for sending the message via streamBridge:$res")
 
